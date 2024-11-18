@@ -1,27 +1,28 @@
-console.log("hello world!")
-
-const canvasElement = document.querySelector("#canvas");
-let gSquareNumber = 10;
-let gRandomness = 0;
-let gInitialOpacity = 0;
-
+//initialize config global variables
 const CANVAS_SIZE = 600;
-let gTotalSquares = gSquareNumber*gSquareNumber;
-let gSquareSize = CANVAS_SIZE/gSquareNumber;
 
+
+// initialize the DOM variables
+const canvasElement = document.querySelector("#canvas");
 const inputSquareNumber = document.querySelector("#square-number");
 const inputRandomness = document.querySelector("#randomness");
 const inputInitialOpacity = document.querySelector("#initial-opacity");
 
+// initialize initial global variables
+let gSquareNumber = 10;
+let gSquareSize = CANVAS_SIZE/gSquareNumber;
+let gTotalSquares = gSquareNumber*gSquareNumber;
+let gRandomness = 0;
+let gInitialOpacity = 0;
+
+// set the canvas size
 canvasElement.style.height = CANVAS_SIZE + "px";
 canvasElement.style.width = CANVAS_SIZE + "px";
 
+// delete all canvas and create amount of newSquares necessary to fill the canvas
+// e add eventlistener to each one of them
 function createCanvas()
 {
-    // let canvasChildrenElements = document.querySelectorAll(".canvas-square"); 
-    // canvasChildrenElements.forEach((item) => {
-    //     canvasElement.remove(item);
-    // });
     gTotalSquares = gSquareNumber*gSquareNumber;
     gSquareSize = CANVAS_SIZE/gSquareNumber;
     canvasElement.innerHTML = ""; 
@@ -31,25 +32,39 @@ function createCanvas()
         newSquare.classList.add("canvas-square");
         newSquare.style.height = gSquareSize + "px";
         newSquare.style.width = gSquareSize + "px";
+        // create properties for each newSquare so to access and change them later
         newSquare.colorArray = getRandomColorArray(gRandomness);
         newSquare.opacity = gInitialOpacity;
         newSquare.style.backgroundColor = getColorFromItem(newSquare);
+        // newSquare.textContent = `${newSquare.opacity}`;
+
+        newSquare.addEventListener('mouseover', (e) => {
+            // console.log("teste");
+            if (newSquare.opacity <= 1) {
+                newSquare.opacity += 0.1;
+                newSquare.opacity = Math.min(newSquare.opacity,1);
+                newSquare.style.backgroundColor = getColorFromItem(newSquare);
+                // newSquare.textContent = `${newSquare.opacity}`;
+                }
+        });
         canvasElement.appendChild(newSquare);
     }
 }
 
-function changeOpacityCanvas() {
+// change the canvas offset opacity for values less than the drawed ones
+function changeOpacityCanvas(oldOpacity) {
     let squareElements = document.querySelectorAll(".canvas-square");
     squareElements.forEach((item) => {
-        if(item.opacity !== gInitialOpacity)
+        if(areAlmostEqual(item.opacity, oldOpacity))
         {
             item.opacity = gInitialOpacity;
             item.style.backgroundColor = getColorFromItem(item);
+            // item.textContent = `${item.opacity}`;
         }
-
     });
 }
 
+// change the overall canvas color randomness 
 function changeRandomnessCanvas()
 {
     let squareElements = document.querySelectorAll(".canvas-square");
@@ -59,27 +74,12 @@ function changeRandomnessCanvas()
     });
 }
 
-function createEventLisneter(){
-    let squareElements = document.querySelectorAll(".canvas-square");
-    squareElements.forEach((item)=> {
-        item.addEventListener('mouseover', (e) => {
-            // console.log("teste");
-            if (item.opacity <= 1) {
-                item.opacity += 0.1;
-                // item.style.backgroundColor = `rgba(255,255,255,${item.opacity}` +`)`;
-                item.style.backgroundColor = getColorFromItem(item);
-                // console.log(item.style.backgroundColor);
-                }
-        })
-    })
-}
 
 function getColorFromItem (item){
     let rgbArray = item.colorArray;
     rgbaColorString = `rgba(${rgbArray.join(',')},` + `${item.opacity}` +`)`;
     return rgbaColorString
 }
-
 
 function getRandomColorArray(randomness) {
     let r = Math.floor(255*(1 - randomness*Math.random()));
@@ -95,25 +95,24 @@ inputSquareNumber.addEventListener('input', (e) => {
     gSquareNumber = e.target.value;
     console.log(e.target.value);
     createCanvas();
-    createEventLisneter();
 });
 
 inputRandomness.addEventListener('input', (e) => {
     gRandomness = e.target.value/10;
     console.log(e.target.value);
     changeRandomnessCanvas();
-    createEventLisneter();
 });
 
 inputInitialOpacity.addEventListener('input', (e) => {
+    let oldOpacity = gInitialOpacity;
     gInitialOpacity = e.target.value/10;
-    console.log(e.target.value);
-    createEventLisneter();
-    changeOpacityCanvas();
+    console.log(gInitialOpacity);
+    changeOpacityCanvas(oldOpacity);
 });
 
 
 createCanvas(gSquareNumber);
-createEventLisneter();
 
-
+function areAlmostEqual(num1, num2, precision = 0.01) {
+    return Math.abs(num1-num2) <= precision;
+}

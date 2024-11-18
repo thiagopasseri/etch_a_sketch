@@ -10,9 +10,18 @@
   <body>
     <div class="outer-container">
       <div id="canvas"></div>
-      <input type="range" id="square-number" min="1" max="60" />
-      <input type="range" id="randomness" min="0" max="10" value="0" />
-      <input type="range" id="initial-opacity" min="0" max="10" value="0" />
+      <div class="user-config">
+        <span>Number of Squares</span
+        ><input type="range" id="square-number" min="1" max="60" />
+      </div>
+      <div class="user-config">
+        <span>Color Randomness</span
+        ><input type="range" id="randomness" min="0" max="10" value="0" />
+      </div>
+      <div class="user-config">
+        <span>Background Opacity</span
+        ><input type="range" id="initial-opacity" min="0" max="10" value="0" />
+      </div>
     </div>
   </body>
 </html>
