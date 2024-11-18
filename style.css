@@ -33,6 +33,11 @@ html{
     display:flex;
 }
 
+.left-config {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: column;
+}
 input[type="color"]{
     border-radius:100px;
     height:100px;
