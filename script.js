@@ -15,12 +15,12 @@ let gSquareNumber = 10;
 let gSquareSize = CANVAS_SIZE/gSquareNumber;
 let gTotalSquares = gSquareNumber*gSquareNumber;
 let gRandomness = inputRandomness.value/10;
-let gInitialOpacity = 0;
+let gBackgroundOpacity = inputInitialOpacity.value;
 let gBrushHueArray = hexToRgbArray(inputColorPicker.value);
 let gBrushOpacity = inputBrushOpacity.value/10;
 let gBrushColorArray = gBrushHueArray.concat([gBrushOpacity]);
 
-console.log(gBrushColorArray);
+// console.log(gBrushColorArray);
 
 // set the canvas size
 canvasElement.style.height = CANVAS_SIZE + "px";
@@ -40,10 +40,11 @@ function createCanvas()
         newSquare.style.height = gSquareSize + "px";
         newSquare.style.width = gSquareSize + "px";
         // create properties for each newSquare so to access and change them later
-        newSquare.colorArray = getRandomColorArray(gRandomness).concat([gInitialOpacity]);
-        console.log(newSquare.colorArray);
-        // newSquare.opacity = gInitialOpacity;
-        newSquare.style.backgroundColor = getColorFromItem(newSquare);
+        newSquare.colorArray = getRandomHueArray(gRandomness).concat([gBackgroundOpacity]);
+        // console.log(newSquare.colorArray);
+        // newSquare.opacity = gBackgroundOpacity;
+        refreshSquare(newSquare);
+        // newSquare.style.backgroundColor = getColorFromItem(newSquare);
         // newSquare.textContent = `${newSquare.opacity}`;
 
         newSquare.addEventListener('mouseover', (e) => {
@@ -63,32 +64,48 @@ function createCanvas()
     }
 }
 
-function getNewSquareColorArray(squareColorArray){
-    const squareOpacity = squareColorArray[3];
-    console.log(squareOpacity);
-    const brushOpacity = gBrushColorArray[3];
-    console.log(brushOpacity);
 
-    let newSquareColorArray = squareColorArray.map((color,index) =>
-        index <= 2 ? gBrushColorArray[index]*brushOpacity+color*squareOpacity*(1-brushOpacity) : Math.min(1, brushOpacity + squareOpacity));
-    // let newSquareOpacityArray = [Math.min(1, brushOpacity + squareOpacity)];
-    // let newSquareColorArray = newSquareHueArray.concat(newSquareOpacityArray);
+// fatorar essa função: não precisa usar vetor, fazer uma função opacityCoeficient
+function getNewSquareColorArray(squareColorArray) {
+    // const squareOpacity = squareColorArray[3];
+    // const brushOpacity = gBrushColorArray[3];
+
+    let newSquareColorArray = squareColorArray.map((color,index) => {
+        let singleColorMixArray = getSingleColorMixArray(
+            color,
+            squareColorArray[3],
+            gBrushColorArray[index],
+            gBrushColorArray[3]
+        );
+        console.log(singleColorMixArray);
+        return index <= 2
+        ? Math.floor(singleColorMixArray[0]) 
+        : Math.min(1, singleColorMixArray[1])}
+    );
+
+
     return newSquareColorArray;
 }
 
 function getSquareColorArray(square) {
-    return square.colorArray.concat(square.opacity)
+    return square.colorArray.concat(square.opacity);
 }
 
+function getSingleColorMixArray (color1, opacity1, color2, opacity2){
+    let opacityCoeficient = opacity1+(1-opacity1)*opacity2;
+    //returns the mix of a single dimensional color with opacity (c1*p1 +(1-p1)*c2*p2)/opacityCoeficient 
+    return [(color1*opacity1 + (1 - opacity1)*color2*opacity2)/opacityCoeficient,opacityCoeficient];
+}
 
 function paintSquare(square){
-    console.log(square.colorArray);
     square.colorArray = getNewSquareColorArray(square.colorArray);
-    square.style.backgroundColor = `rgba(` + `${square.colorArray.join(',')}`+ `)`;
-    console.log("background rgba " + square.style.backgroundColor);
+    refreshSquare(square);
 }
 
-
+function refreshSquare(square) {
+    square.style.backgroundColor = `rgba(` + `${square.colorArray.join(',')}`+ `)`;
+    square.textContent = `${square.colorArray}`
+}
 
     // let gBrushOpacity = inputBrushOpacity.value;
 
@@ -104,12 +121,14 @@ function paintSquare(square){
 function changeOpacityCanvas(oldOpacity) {
     let squareElements = document.querySelectorAll(".canvas-square");
     squareElements.forEach((item) => {
-        if(areAlmostEqual(item.opacity, oldOpacity))
+        let itemOpacity = item.colorArray[3];
+        if(areAlmostEqual(itemOpacity, oldOpacity))
         {
-            item.opacity = gInitialOpacity;
-            item.style.backgroundColor = getColorFromItem(item);
+            item.colorArray[3] = gBackgroundOpacity;
+            refreshSquare(item);
             // item.textContent = `${item.opacity}`;
         }
+        
     });
 }
 
@@ -117,9 +136,10 @@ function changeOpacityCanvas(oldOpacity) {
 function changeRandomnessCanvas()
 {
     let squareElements = document.querySelectorAll(".canvas-square");
-    squareElements.forEach((item) => {
-        item.colorArray = getRandomColorArray(gRandomness);
-        item.style.backgroundColor = getColorFromItem(item);
+    squareElements.forEach((square) => {
+        square.colorArray = getRandomHueArray(gRandomness).concat(gBackgroundOpacity);
+        refreshSquare(square);
+        // console.log(square.style.backgroundColor);
     });
 }
 
@@ -129,7 +149,7 @@ function getColorFromItem (item){
     return rgbaColorString
 }
 
-function getRandomColorArray(randomness) {
+function getRandomHueArray(randomness) {
     let r = Math.floor(255*(1 - randomness*Math.random()));
     let g = Math.floor(255*(1 - randomness*Math.random()));
     let b = Math.floor(255*(1 - randomness*Math.random()));
@@ -145,20 +165,19 @@ function areAlmostEqual(num1, num2, precision = 0.01) {
 
 inputSquareNumber.addEventListener('input', (e) => {
     gSquareNumber = e.target.value;
-    console.log(e.target.value);
+    // console.log(e.target.value);
     createCanvas();
 });
 
 inputRandomness.addEventListener('input', (e) => {
     gRandomness = e.target.value/10;
-    console.log(e.target.value);
     changeRandomnessCanvas();
 });
 
 inputInitialOpacity.addEventListener('input', (e) => {
-    let oldOpacity = gInitialOpacity;
-    gInitialOpacity = e.target.value/10;
-    console.log(gInitialOpacity);
+    let oldOpacity = gBackgroundOpacity;
+    gBackgroundOpacity = e.target.value/10;
+    // console.log(gBackgroundOpacity);
     changeOpacityCanvas(oldOpacity);
 });
 
