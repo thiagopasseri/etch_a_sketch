@@ -11,7 +11,7 @@ const inputBrushOpacity = document.querySelector("#brush-opacity");
 const inputColorPicker = document.querySelector("#color-picker");
 
 // initialize initial global variables
-let gSquareNumber = 10;
+let gSquareNumber = inputSquareNumber.value;
 let gSquareSize = CANVAS_SIZE/gSquareNumber;
 let gTotalSquares = gSquareNumber*gSquareNumber;
 let gRandomness = inputRandomness.value/10;
@@ -20,7 +20,6 @@ let gBrushHueArray = hexToRgbArray(inputColorPicker.value);
 let gBrushOpacity = inputBrushOpacity.value/10;
 let gBrushColorArray = gBrushHueArray.concat([gBrushOpacity]);
 
-// console.log(gBrushColorArray);
 
 // set the canvas size
 canvasElement.style.height = CANVAS_SIZE + "px";
@@ -39,51 +38,41 @@ function createCanvas()
         newSquare.classList.add("canvas-square");
         newSquare.style.height = gSquareSize + "px";
         newSquare.style.width = gSquareSize + "px";
-        // create properties for each newSquare so to access and change them later
         newSquare.colorArray = getRandomHueArray(gRandomness).concat([gBackgroundOpacity]);
-        // console.log(newSquare.colorArray);
-        // newSquare.opacity = gBackgroundOpacity;
+
         refreshSquare(newSquare);
-        // newSquare.style.backgroundColor = getColorFromItem(newSquare);
-        // newSquare.textContent = `${newSquare.opacity}`;
 
         newSquare.addEventListener('mouseover', (e) => {
             gBrushColorArray = hexToRgbArray(inputColorPicker.value).concat(inputBrushOpacity.value/10);
             paintSquare(newSquare);
-            // console.log(newSquare.colorArray);
 
-            
-            // if (newSquare.opacity <= 1) {
-            //     newSquare.opacity += gBrushOpacity/10;
-            //     newSquare.opacity = Math.min(newSquare.opacity,1);
-            //     newSquare.style.backgroundColor = getColorFromItem(newSquare);
-            //     // newSquare.textContent = `${newSquare.opacity}`;
-            //     }
         });
         canvasElement.appendChild(newSquare);
     }
 }
 
 
+// função que recebe (x,y) e retorna o square (x,y)
+// fuction (x,y) {
+//     const n = x + y*
+//     const squareXY = document.querySelector("#canvas div:nth-child()");
+// }
+
 // fatorar essa função: não precisa usar vetor, fazer uma função opacityCoeficient
 function getNewSquareColorArray(squareColorArray) {
-    // const squareOpacity = squareColorArray[3];
-    // const brushOpacity = gBrushColorArray[3];
 
     let newSquareColorArray = squareColorArray.map((color,index) => {
         let singleColorMixArray = getSingleColorMixArray(
-            color,
-            squareColorArray[3],
             gBrushColorArray[index],
-            gBrushColorArray[3]
+            gBrushColorArray[3],
+            color,
+            squareColorArray[3]
         );
         console.log(singleColorMixArray);
         return index <= 2
         ? Math.floor(singleColorMixArray[0]) 
         : Math.min(1, singleColorMixArray[1])}
     );
-
-
     return newSquareColorArray;
 }
 
@@ -99,23 +88,14 @@ function getSingleColorMixArray (color1, opacity1, color2, opacity2){
 
 function paintSquare(square){
     square.colorArray = getNewSquareColorArray(square.colorArray);
+    square.textContent = `${square.colorArray}`;
     refreshSquare(square);
 }
 
 function refreshSquare(square) {
     square.style.backgroundColor = `rgba(` + `${square.colorArray.join(',')}`+ `)`;
-    square.textContent = `${square.colorArray}`
+    // square.textContent = `${square.colorArray}`
 }
-
-    // let gBrushOpacity = inputBrushOpacity.value;
-
-    // if (newSquare.opacity <= 1) {
-    //     newSquare.opacity += gBrushOpacity/10;
-    //     newSquare.opacity = Math.min(newSquare.opacity,1);
-    //     newSquare.style.backgroundColor = getColorFromItem(newSquare);
-    //     // newSquare.textContent = `${newSquare.opacity}`;
-    //     }   
-
 
 // change the canvas offset opacity for values less than the drawed ones
 function changeOpacityCanvas(oldOpacity) {
@@ -126,7 +106,6 @@ function changeOpacityCanvas(oldOpacity) {
         {
             item.colorArray[3] = gBackgroundOpacity;
             refreshSquare(item);
-            // item.textContent = `${item.opacity}`;
         }
         
     });
@@ -139,7 +118,6 @@ function changeRandomnessCanvas()
     squareElements.forEach((square) => {
         square.colorArray = getRandomHueArray(gRandomness).concat(gBackgroundOpacity);
         refreshSquare(square);
-        // console.log(square.style.backgroundColor);
     });
 }
 
@@ -156,12 +134,9 @@ function getRandomHueArray(randomness) {
     return [r,g,b];
 }
 
-
-
 function areAlmostEqual(num1, num2, precision = 0.01) {
     return Math.abs(num1-num2) <= precision;
 }
-
 
 inputSquareNumber.addEventListener('input', (e) => {
     gSquareNumber = e.target.value;
@@ -177,7 +152,6 @@ inputRandomness.addEventListener('input', (e) => {
 inputInitialOpacity.addEventListener('input', (e) => {
     let oldOpacity = gBackgroundOpacity;
     gBackgroundOpacity = e.target.value/10;
-    // console.log(gBackgroundOpacity);
     changeOpacityCanvas(oldOpacity);
 });
 
